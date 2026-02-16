@@ -17,3 +17,13 @@ func GetById(db *sql.DB, id int) (*Todo, error) {
 	}
 	return &todo, nil //該当するデータがある場合はTodo構造体のポインタを返す
 }
+
+// データを挿入して挿入したデータのIDを返す関数
+func InsertData(db *sql.DB, title string) (int, error) {
+	var id int
+	err := db.QueryRow("INSERT INTO todo (todo_title,todo_done) VALUES ($1, false) RETURNING todo_id", title).Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+	return id, nil
+}
