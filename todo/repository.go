@@ -21,9 +21,19 @@ func GetById(db *sql.DB, id int) (*Todo, error) {
 // データを挿入して挿入したデータのIDを返す関数
 func InsertData(db *sql.DB, title string) (int, error) {
 	var id int
-	err := db.QueryRow("INSERT INTO todo (todo_title,todo_done) VALUES ($1, false) RETURNING todo_id", title).Scan(&id)
+	row := db.QueryRow("INSERT INTO todo (todo_title,todo_done) VALUES ($1, false) RETURNING todo_id", title)
+	err := row.Scan(&id)
 	if err != nil {
 		return 0, err
 	}
-	return id, nil
+	return id, nil //小さいデータはポインタじゃなくてコピー渡すで大丈夫
+}
+
+// データを更新する関数
+func UpdateData(db *sql.DB, id int, title string) error {
+	_, err := db.Exec("UPDATE todo SET todo_title = $1 WHERE todo_id = $2", title, id) //使わない値を受け取る時に_を使う
+	if err != nil {
+		return err
+	}
+	return nil
 }
