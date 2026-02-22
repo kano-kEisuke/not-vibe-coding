@@ -39,4 +39,4 @@ func UpdateData(db *sql.DB, id int, title string) error {
 func DeleteData(db *sql.DB, id int) error {
 	_, err := db.Exec("DELETE FROM todo WHERE todo_id = $1", id)
 	return err //ifでnilかエラーが入ったかで条件分けなくても戻り値error型やったらこの書き方でいいらしい
-} //エラーあったらエラー返すしなかったらnil返してくれる
+} //エラーあったらエラー返すし、なかったらnil返してくれる
