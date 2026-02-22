@@ -11,7 +11,7 @@ func GetAll(db *sql.DB) ([]Todo, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer rows.Close() //複数行データを取得しているので、db.Query関数はどこで処理を終了していいかわからないからこれで明示して閉じる
 	var todos []Todo
 	var todo Todo
 	for rows.Next() {
