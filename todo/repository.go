@@ -5,13 +5,37 @@ import (
 	"errors"
 )
 
+// 全てのデータを取得する関数
+func GetAll(db *sql.DB) ([]Todo, error) {
+	rows, err := db.Query("SELECT todo_id, todo_title, todo_done, created_at FROM todo")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var todos []Todo
+	var todo Todo
+	for rows.Next() {
+		if err := rows.Scan(&todo.TodoId, &todo.TodoTitle, &todo.TodoDone, &todo.CreatedAt); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return nil, nil
+			}
+			return nil, err
+		}
+		todos = append(todos, todo)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return todos, nil
+}
+
 // 指定されたIDに紐づくデータを取得する関数
 func GetById(db *sql.DB, id int) (*Todo, error) {
 	row := db.QueryRow("SELECT todo_id, todo_title, todo_done, created_at FROM todo WHERE todo_id = $1", id)
 	var todo Todo
 	if err := row.Scan(&todo.TodoId, &todo.TodoTitle, &todo.TodoDone, &todo.CreatedAt); err != nil {
-		if errors.Is(err, sql.ErrNoRows) { //該当するデータがない場合はnil返す
-			return nil, nil
+		if errors.Is(err, sql.ErrNoRows) { //errors.Isは該当するエラーが入ってないかを確認して、その場合何を返すかを決めてる
+			return nil, nil //この場合０件取得の場合はエラーじゃなくてnilしか返さんようにしてる
 		}
 		return nil, err //それ以外のエラーはエラー内容をそのまま返す
 	}
