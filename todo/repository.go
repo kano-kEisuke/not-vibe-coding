@@ -54,13 +54,20 @@ func InsertData(db *sql.DB, title string) (int, error) {
 }
 
 // データを更新する関数
-func UpdateData(db *sql.DB, id int, title string) error {
-	_, err := db.Exec("UPDATE todo SET todo_title = $1 WHERE todo_id = $2", title, id) //使わない値を受け取る時に_を使う
-	return err
+func UpdateData(db *sql.DB, id int, title string) (int64, error) {
+	result, err := db.Exec("UPDATE todo SET todo_title = $1 WHERE todo_id = $2", title, id)
+	if err != nil {
+		return 0, err
+	}
+	rowsaffected, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return rowsaffected, nil
 }
 
 // データを削除する関数
 func DeleteData(db *sql.DB, id int) error {
-	_, err := db.Exec("DELETE FROM todo WHERE todo_id = $1", id)
-	return err //ifでnilかエラーが入ったかで条件分けなくても戻り値error型やったらこの書き方でいいらしい
+	_, err := db.Exec("DELETE FROM todo WHERE todo_id = $1", id) //使わない値を受け取る時に_を使う
+	return err                                                   //ifでnilかエラーが入ったかで条件分けなくても戻り値error型やったらこの書き方でいいらしい
 } //エラーあったらエラー返すし、なかったらnil返してくれる
