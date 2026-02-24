@@ -1,14 +1,40 @@
-package api
+package main
 
 import (
+	"database/sql"
+	"log"
 	"net/http"
 	"not-vibe-coding/todo"
+
+	_ "github.com/lib/pq"
 )
 
 func main() {
+
+	dsn := "user=keisukekano dbname=postgres sslmode=disable" //DB設定
+	db, err := sql.Open("postgres", dsn)                      //DB接続
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := db.Ping(); err != nil { //接続確認
+		log.Panic(err)
+	}
+	log.Println("DB接続成功")
+	defer db.Close()
+
+	var dbName string
+	row := db.QueryRow("SELECT current_database()") //現在のデータベースを取得する
+	if err := row.Scan(&dbName); err != nil {       //クエリの結果を変数に格納
+		log.Panic(err)
+	}
+	log.Println("現在のデータベース:", dbName)
+
 	//http.HandleFunc 「どの」URLで「なに」をするか
 	http.HandleFunc("/health", todo.Health)
 
-	//サーバー立てて8080ポートで待つ
+	//サーバー立てて8080ポートで待つ　nilはデフォルトルーター使うって意味らしい
 	http.ListenAndServe(":8080", nil)
+
+	http.HandleFunc("/todos", todo.GetAllTodos(db))
 }
