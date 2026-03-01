@@ -33,14 +33,22 @@ func main() {
 	// http.HandleFunc 「どの」URLで「なに」をするか
 	http.HandleFunc("/health", todo.Health)
 
-	// GET/todos/all 全てのTodoリストを取得する
-	http.HandleFunc("/todos/all", todo.GetAllTodos(db))
+	// GET /todos 全てのTodoを取得
+	// POST /todos 新しいTodoを作成
+	http.HandleFunc("/todos", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			todo.CreateTodo(db)(w, r)
+		case http.MethodGet:
+			todo.GetAllTodos(db)(w, r)
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			w.Write([]byte("Method Not Allowed"))
+		}
+	})
 
 	// GET/todo?id={id} 指定されたIDのTodoを取得する
 	http.HandleFunc("/todo", todo.GetTodo(db))
-
-	// POST/todos/create Todoリストを新規作成する
-	http.HandleFunc("/todos/create", todo.CreateTodo(db))
 
 	// サーバー立てて8080ポートで待つ　nilはデフォルトルーター使うって意味らしい
 	http.ListenAndServe(":8080", nil)
