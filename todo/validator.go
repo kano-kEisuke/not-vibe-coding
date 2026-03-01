@@ -17,9 +17,6 @@ func ValidateInsertTodoRequest(req InsertTodoRequest) error {
 
 // 更新時のバリデーション
 func ValidateUpdateTodoRequest(req UpdateTodoRequest) error {
-	if req.TodoId <= 0 {
-		return errors.New("todo_id must be a positive integer")
-	}
 	if req.TodoTitle == "" {
 		return errors.New("todo_title is required")
 	}

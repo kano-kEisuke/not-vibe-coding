@@ -96,7 +96,7 @@ func CreateTodo(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func UpdateTodo(db *sql.DB) http.HandlerFunc {
+func UpdateTodo(db *sql.DB, id int) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req UpdateTodoRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -111,7 +111,7 @@ func UpdateTodo(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		rowsAffected, err := UpdateData(db, req.TodoId, req.TodoTitle)
+		rowsAffected, err := UpdateData(db, id, req.TodoTitle)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(map[string]string{"error": "Internal Server Error"})

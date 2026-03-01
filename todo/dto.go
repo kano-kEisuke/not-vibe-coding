@@ -12,7 +12,6 @@ type InsertTodoResponse struct {
 
 // Todo更新リクエスト
 type UpdateTodoRequest struct {
-	TodoId    int    `json:"todo_id"`
 	TodoTitle string `json:"todo_title"`
 }
 
