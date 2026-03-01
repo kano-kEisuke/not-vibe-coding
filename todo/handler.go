@@ -66,6 +66,7 @@ func GetTodo(db *sql.DB) http.HandlerFunc {
 
 func CreateTodo(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// リクエストで送られてきたJSONデータをGOの構造体にデコード
 		var req InsertTodoRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -73,6 +74,24 @@ func CreateTodo(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-	}
+		// バリデーション
+		if err := ValidateInsertTodoRequest(req); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+			return
+		}
 
+		// データベースに挿入
+		id, err := InsertData(db, req.TodoTitle)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"error": "Internal Server Error"})
+			return
+		}
+
+		// レスポンス返却
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(InsertTodoResponse{TodoId: id})
+	}
 }
