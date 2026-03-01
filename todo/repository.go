@@ -14,8 +14,8 @@ func GetAll(db *sql.DB) ([]Todo, error) {
 	defer rows.Close() //複数行データを取得しているので、db.Query関数はどこで処理を終了していいかわからないからこれで明示して閉じる
 	var todos []Todo
 	var todo Todo
-	for rows.Next() {
-		if err := rows.Scan(&todo.TodoId, &todo.TodoTitle, &todo.TodoDone, &todo.CreatedAt); err != nil {
+	for rows.Next() { //変数内に入っているデータを一行ずつ読み込み、データがあればそのデータで後続処理を開始して、次のループではポインタを一個進める
+		if err := rows.Scan(&todo.TodoId, &todo.TodoTitle, &todo.TodoDone, &todo.CreatedAt); err != nil { //現在の行を読み込んでいる
 			if errors.Is(err, sql.ErrNoRows) {
 				return nil, nil
 			}
