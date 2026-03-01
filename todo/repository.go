@@ -59,11 +59,11 @@ func UpdateData(db *sql.DB, id int, title string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	rowsaffected, err := result.RowsAffected()
+	rowsaffected, err := result.RowsAffected() //何行更新されたか
 	if err != nil {
 		return 0, err
 	}
-	return rowsaffected, nil
+	return rowsaffected, nil //何行更新されたかを返す
 }
 
 // データを削除する関数

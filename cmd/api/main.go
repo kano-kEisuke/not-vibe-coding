@@ -33,8 +33,8 @@ func main() {
 	// http.HandleFunc 「どの」URLで「なに」をするか
 	http.HandleFunc("/health", todo.Health)
 
-	// GET /todos 全てのTodoを取得
-	// POST /todos 新しいTodoを作成
+	// GET /todos 全てのTodoを取得する
+	// POST /todos 新しいTodoを作成する
 	http.HandleFunc("/todos", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:

@@ -95,3 +95,31 @@ func CreateTodo(db *sql.DB) http.HandlerFunc {
 		json.NewEncoder(w).Encode(InsertTodoResponse{TodoId: id})
 	}
 }
+
+func UpdateTodo(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req UpdateTodoRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"error": "Invalid request body"})
+			return
+		}
+
+		if err := ValidateUpdateTodoRequest(req); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+			return
+		}
+
+		rowsAffected, err := UpdateData(db, req.TodoId, req.TodoTitle)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"error": "Internal Server Error"})
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(UpdateTodoResponse{RowsAffected: rowsAffected})
+	}
+}
