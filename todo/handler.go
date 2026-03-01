@@ -63,3 +63,16 @@ func GetTodo(db *sql.DB) http.HandlerFunc {
 		}
 	}
 }
+
+func CreateTodo(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req InsertTodoRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Invalid request body"))
+			return
+		}
+
+	}
+
+}
