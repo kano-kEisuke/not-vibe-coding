@@ -19,7 +19,7 @@ func Health(w http.ResponseWriter, r *http.Request) { // 引数で「どこに�
 	w.Write([]byte("ok"))
 }
 
-func GetAllTodos(db *sql.DB) http.HandlerFunc {
+func GetAllTodos(db *sql.DB) http.HandlerFunc { //返り値で関数を返している（クロージャっていうらしい）
 	return func(w http.ResponseWriter, r *http.Request) {
 		todos, err := GetAll(db)
 		if err != nil {
