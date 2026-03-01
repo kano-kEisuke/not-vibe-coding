@@ -8,7 +8,7 @@ func ValidateInsertTodoRequest(req InsertTodoRequest) error {
 		return errors.New("todo_title is required")
 	}
 
-	if len(req.TodoTitle) > 255 {
+	if len(req.TodoTitle) > 64 {
 		return errors.New("todo_title must be less than 255 characters")
 	}
 
@@ -20,7 +20,7 @@ func ValidateUpdateTodoRequest(req UpdateTodoRequest) error {
 	if req.TodoTitle == "" {
 		return errors.New("todo_title is required")
 	}
-	if len(req.TodoTitle) > 255 {
+	if len(req.TodoTitle) > 64 {
 		return errors.New("todo_title must be 255 characters or less")
 	}
 	return nil
