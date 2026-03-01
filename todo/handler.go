@@ -3,6 +3,7 @@ package todo
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -53,7 +54,12 @@ func GetTodo(db *sql.DB) http.HandlerFunc {
 		if todo == nil {
 			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte("Todo Not Found"))
+			return
 		}
-
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(todo); err != nil {
+			log.Printf("JSON encode error: %v", err)
+		}
 	}
 }
