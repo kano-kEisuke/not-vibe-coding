@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"strconv"
 )
 
 func Health(w http.ResponseWriter, r *http.Request) { // 引数で「どこに」「何を」書き込むかを指定　メッセンジャー的な
@@ -24,7 +25,7 @@ func GetAllTodos(db *sql.DB) http.HandlerFunc { //返り値で関数を返して
 		todos, err := GetAll(db)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Internal Server Error"))
+			w.Write([]byte("Internal Server Error")) //httpはバイトで通信するからバイト型に変換
 			return
 		}
 
@@ -32,4 +33,27 @@ func GetAllTodos(db *sql.DB) http.HandlerFunc { //返り値で関数を返して
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(todos) //インスタンス化してモジュール呼んでる。EncodeはJSONに変換して、wって宛先に書き込んでる。
 	} //上記の関数追記メモ：ストリーム処理はデータ全部をメモリに溜めずに少しずつ処理すること。
+}
+
+func GetTodo(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.URL.Query().Get("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Invalid ID parameter")) //httpはバイトで通信するからバイト型に変換
+			return
+		}
+		todo, err := GetById(db, id)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("Internal Server Error"))
+			return
+		}
+		if todo == nil {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("Todo Not Found"))
+		}
+
+	}
 }
