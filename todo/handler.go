@@ -39,7 +39,7 @@ func GetAllTodos(db *sql.DB) http.HandlerFunc { //返り値で関数を返して
 
 func GetTodo(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		idStr := strings.TrimPrefix(r.URL.Path, "/todo/")
+		idStr := strings.TrimPrefix(r.URL.Path, "/todos/")
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
