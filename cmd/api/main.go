@@ -48,7 +48,7 @@ func main() {
 	})
 
 	// GET /todo/{id} 指定されたIDのTodoを取得する
-	http.HandleFunc("/todo/", todo.GetTodo(db))
+	http.HandleFunc("/todos/", todo.GetTodo(db))
 
 	// サーバー立てて8080ポートで待つ　nilはデフォルトルーター使うって意味らしい
 	http.ListenAndServe(":8080", nil)
