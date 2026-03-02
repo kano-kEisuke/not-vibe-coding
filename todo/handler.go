@@ -37,34 +37,6 @@ func GetAllTodos(db *sql.DB) http.HandlerFunc { //返り値で関数を返して
 	} //上記の関数追記メモ：ストリーム処理はデータ全部をメモリに溜めずに少しずつ処理すること。
 }
 
-func GetTodo(db *sql.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		idStr := strings.TrimPrefix(r.URL.Path, "/todos/")
-		id, err := strconv.Atoi(idStr)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("Invalid ID parameter")) //httpはバイトで通信するからバイト型に変換
-			return
-		}
-		todo, err := GetById(db, id)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Internal Server Error"))
-			return
-		}
-		if todo == nil {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte("Todo Not Found"))
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(todo); err != nil {
-			log.Printf("JSON encode error: %v", err)
-		}
-	}
-}
-
 func CreateTodo(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// リクエストで送られてきたJSONデータをGOの構造体にデコード
@@ -97,15 +69,52 @@ func CreateTodo(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func UpdateTodo(db *sql.DB, id int) http.HandlerFunc {
+func GetTodo(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := strings.TrimPrefix(r.URL.Path, "/todos/")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Invalid ID parameter")) //httpはバイトで通信するからバイト型に変換
+			return
+		}
+		todo, err := GetById(db, id)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("Internal Server Error"))
+			return
+		}
+		if todo == nil {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("Todo Not Found"))
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(todo); err != nil {
+			log.Printf("JSON encode error: %v", err)
+		}
+	}
+}
+
+func UpdateTodo(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// パスからID取得
+		idStr := strings.TrimPrefix(r.URL.Path, "/todos/")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"error": "Invalid ID parameter"})
+			return
+		}
+		// リクエストボディのデコード
 		var req UpdateTodoRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(map[string]string{"error": "Invalid request body"})
 			return
 		}
-
+		// 入力チェック
 		if err := ValidateUpdateTodoRequest(req); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
