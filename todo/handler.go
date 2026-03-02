@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func Health(w http.ResponseWriter, r *http.Request) { // 引数で「どこに」「何を」書き込むかを指定　メッセンジャー的な
@@ -38,7 +39,7 @@ func GetAllTodos(db *sql.DB) http.HandlerFunc { //返り値で関数を返して
 
 func GetTodo(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		idStr := r.URL.Query().Get("id")
+		idStr := strings.TrimPrefix(r.URL.Path, "/todo/")
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
