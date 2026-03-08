@@ -48,12 +48,12 @@ func main() {
 	})
 
 	// GET /todos/{id} 指定されたIDのTodoを取得する
-	// PUT /todos/{id} 指定されたIDのTodoを更新する
+	// PATCH /todos/{id} 指定されたIDのTodoを更新する
 	http.HandleFunc("/todos/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			todo.GetTodo(db)(w, r)
-		case http.MethodPut:
+		case http.MethodPatch: //部分更新なので、PUTじゃなくてPATCH
 			todo.UpdateTodo(db)(w, r)
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
