@@ -42,8 +42,7 @@ func main() {
 		case http.MethodGet:
 			todo.GetAllTodos(db)(w, r)
 		default:
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			w.Write([]byte("Method Not Allowed"))
+			todo.WriteError(w, http.StatusMethodNotAllowed, "Method Not Allowed")
 		}
 	})
 
@@ -59,8 +58,7 @@ func main() {
 		case http.MethodDelete:
 			todo.DeleteTodo(db)(w, r)
 		default:
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			w.Write([]byte("Method Not Allowed"))
+			todo.WriteError(w, http.StatusMethodNotAllowed, "Method Not Allowed")
 		}
 	})
 

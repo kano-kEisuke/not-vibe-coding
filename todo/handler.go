@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -28,8 +27,7 @@ func GetAllTodos(db *sql.DB) http.HandlerFunc { //返り値で関数を返して
 	return func(w http.ResponseWriter, r *http.Request) {
 		todos, err := GetAll(db)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Internal Server Error")) //httpはバイトで通信するからバイト型に変換
+			WriteError(w, http.StatusInternalServerError, "Internal Server Error")
 			return
 		}
 
@@ -45,23 +43,20 @@ func CreateTodo(db *sql.DB) http.HandlerFunc {
 		// リクエストで送られてきたJSONデータをGOの構造体にデコード
 		var req InsertTodoRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("Invalid request body"))
+			WriteError(w, http.StatusBadRequest, "Invalid request body")
 			return
 		}
 
 		// バリデーション
 		if err := ValidateInsertTodoRequest(req); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+			WriteError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		// データベースに挿入
 		id, err := InsertData(db, req.TodoTitle)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(map[string]string{"error": "Internal Server Error"})
+			WriteError(w, http.StatusInternalServerError, "Internal Server Error")
 			return
 		}
 
@@ -78,26 +73,21 @@ func GetTodo(db *sql.DB) http.HandlerFunc {
 		idStr := strings.TrimPrefix(r.URL.Path, "/todos/")
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("Invalid ID parameter")) //httpはバイトで通信するからバイト型に変換
+			WriteError(w, http.StatusBadRequest, "Invalid ID parameter")
 			return
 		}
 		todo, err := GetById(db, id)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Internal Server Error"))
+			WriteError(w, http.StatusInternalServerError, "Internal Server Error")
 			return
 		}
 		if todo == nil {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte("Todo Not Found"))
+			WriteError(w, http.StatusNotFound, "Todo Not Found")
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(todo); err != nil {
-			log.Printf("JSON encode error: %v", err)
-		}
+		json.NewEncoder(w).Encode(todo)
 	}
 }
 
@@ -108,28 +98,24 @@ func UpdateTodo(db *sql.DB) http.HandlerFunc {
 		idStr := strings.TrimPrefix(r.URL.Path, "/todos/")
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(map[string]string{"error": "Invalid ID parameter"})
+			WriteError(w, http.StatusBadRequest, "Invalid ID parameter")
 			return
 		}
 		// リクエストボディのデコード
 		var req UpdateTodoRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(map[string]string{"error": "Invalid request body"})
+			WriteError(w, http.StatusBadRequest, "Invalid request body")
 			return
 		}
 		// 入力チェック
 		if err := ValidateUpdateTodoRequest(req); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+			WriteError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		rowsAffected, err := UpdateData(db, id, req.TodoTitle)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(map[string]string{"error": "Internal Server Error"})
+			WriteError(w, http.StatusInternalServerError, "Internal Server Error")
 			return
 		}
 
@@ -145,21 +131,18 @@ func DeleteTodo(db *sql.DB) http.HandlerFunc {
 		idStr := strings.TrimPrefix(r.URL.Path, "/todos/")
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(map[string]string{"error": "Invalid ID parameter"})
+			WriteError(w, http.StatusBadRequest, "Invalid ID parameter")
 			return
 		}
 		err = DeleteData(db, id)
 		if err != nil {
 			// 該当IDが存在しない場合
 			if errors.Is(err, sql.ErrNoRows) {
-				w.WriteHeader(http.StatusNotFound)
-				json.NewEncoder(w).Encode(map[string]string{"error": "Todo not found"})
+				WriteError(w, http.StatusNotFound, "Todo not found")
 				return
 			}
 			// その他のエラー
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(map[string]string{"error": "Internal Server Error"})
+			WriteError(w, http.StatusInternalServerError, "Internal Server Error")
 			return
 		}
 
