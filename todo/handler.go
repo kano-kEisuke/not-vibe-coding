@@ -3,6 +3,7 @@ package todo
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -150,10 +151,18 @@ func DeleteTodo(db *sql.DB) http.HandlerFunc {
 		}
 		err = DeleteData(db, id)
 		if err != nil {
+			// 該当IDが存在しない場合
+			if errors.Is(err, sql.ErrNoRows) {
+				w.WriteHeader(http.StatusNotFound)
+				json.NewEncoder(w).Encode(map[string]string{"error": "Todo not found"})
+				return
+			}
+			// その他のエラー
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Internal Server Error"))
+			json.NewEncoder(w).Encode(map[string]string{"error": "Internal Server Error"})
 			return
 		}
+
 		w.WriteHeader(http.StatusNoContent)
 	}
 }

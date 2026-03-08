@@ -68,6 +68,20 @@ func UpdateData(db *sql.DB, id int, title string) (int64, error) {
 
 // データを削除する関数
 func DeleteData(db *sql.DB, id int) error {
-	_, err := db.Exec("DELETE FROM todo WHERE todo_id = $1", id) //使わない値を受け取る時に_を使う
-	return err                                                   //ifでnilかエラーが入ったかで条件分けなくても戻り値error型やったらこの書き方でいいらしい
-} //エラーあったらエラー返すし、なかったらnil返してくれる
+	result, err := db.Exec("DELETE FROM todo WHERE todo_id = $1", id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected() //何行削除されたか確認
+	if err != nil {
+		return err
+	}
+
+	// 削除された行がない = 該当IDが存在しない
+	if rowsAffected == 0 {
+		return sql.ErrNoRows //該当IDが存在しない場合はそのことを示すエラーを返す
+	}
+
+	return nil
+}
