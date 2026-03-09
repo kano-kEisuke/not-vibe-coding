@@ -66,6 +66,26 @@ func UpdateData(db *sql.DB, id int, title string) (int64, error) {
 	return rowsaffected, nil //何行更新されたかを返す
 }
 
+// todoを完了状態に更新する関数
+func UpdateDone(db *sql.DB, id int) error {
+	result, err := db.Exec(
+		"UPDATE todo SET todo_done = NOT todo_done WHERE todo_id = $1", id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
+}
+
 // データを削除する関数
 func DeleteData(db *sql.DB, id int) error {
 	result, err := db.Exec("DELETE FROM todo WHERE todo_id = $1", id)
