@@ -54,16 +54,19 @@ func InsertData(db *sql.DB, title string) (int, error) {
 }
 
 // データを更新する関数
-func UpdateData(db *sql.DB, id int, title string) (int64, error) {
+func UpdateData(db *sql.DB, id int, title string) error {
 	result, err := db.Exec("UPDATE todo SET todo_title = $1 WHERE todo_id = $2", title, id)
 	if err != nil {
-		return 0, err
+		return err
 	}
 	rowsaffected, err := result.RowsAffected() //何行更新されたか
 	if err != nil {
-		return 0, err
+		return err
 	}
-	return rowsaffected, nil //何行更新されたかを返す
+	if rowsaffected == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
 }
 
 // todoを完了未完了に更新する関数

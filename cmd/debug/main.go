@@ -47,12 +47,11 @@ func main() {
 	fmt.Printf("取得したデータ: ID=%d, Title=%s\n", todotest.TodoId, todotest.TodoTitle)
 
 	//更新
-	var result int64
-	result, err = todo.UpdateData(db, id1, "更新できた")
+	err = todo.UpdateData(db, id1, "更新できた")
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("更新完了 %d件\n", result)
+	fmt.Println("更新完了")
 
 	//2件目挿入
 	var id2 int

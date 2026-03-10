@@ -112,16 +112,18 @@ func UpdateTodo(db *sql.DB) http.HandlerFunc {
 			WriteError(w, http.StatusBadRequest, err.Error())
 			return
 		}
-
-		rowsAffected, err := UpdateData(db, id, req.TodoTitle)
+		err = UpdateData(db, id, req.TodoTitle)
 		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) { //該当IDが存在しない場合は404 Not Foundを返す
+				WriteError(w, http.StatusNotFound, "Todo not found")
+				return
+			}
+			// その他のエラー
 			WriteError(w, http.StatusInternalServerError, "Internal Server Error")
 			return
 		}
-
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(UpdateTodoResponse{RowsAffected: rowsAffected})
+		w.WriteHeader(http.StatusOK) //更新成功した場合は200 OKを返す
 	}
 }
 
