@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"not-vibe-coding/todo"
+	"strings"
 
 	_ "github.com/lib/pq"
 )
@@ -48,8 +49,15 @@ func main() {
 
 	// GET /todos/{id} 指定されたIDのTodoを取得する
 	// PATCH /todos/{id} 指定されたIDのTodoを更新する
+	// PATCH /todos/{id}/done 完了状態を切り替える
 	// DELETE /todos/{id} 指定されたIDのTodoを削除する
 	http.HandleFunc("/todos/", func(w http.ResponseWriter, r *http.Request) {
+		// /todos/{id}/done のパターンをチェック
+		if strings.HasSuffix(r.URL.Path, "/done") && r.Method == http.MethodPatch {
+			todo.ToggleTodoDone(db)(w, r)
+			return
+		}
+
 		switch r.Method {
 		case http.MethodGet:
 			todo.GetTodo(db)(w, r)

@@ -66,20 +66,20 @@ func UpdateData(db *sql.DB, id int, title string) (int64, error) {
 	return rowsaffected, nil //何行更新されたかを返す
 }
 
-// todoを完了状態に更新する関数
+// todoを完了未完了に更新する関数
 func UpdateDone(db *sql.DB, id int) error {
 	result, err := db.Exec(
-		"UPDATE todo SET todo_done = NOT todo_done WHERE todo_id = $1", id)
+		"UPDATE todo SET todo_done = NOT todo_done WHERE todo_id = $1", id) //todo_doneの値を反転させることで、完了状態と未完了状態を切り替える
 	if err != nil {
 		return err
 	}
 
-	rowsAffected, err := result.RowsAffected()
+	rowsAffected, err := result.RowsAffected() //何行更新されたか確認
 	if err != nil {
 		return err
 	}
 
-	if rowsAffected == 0 {
+	if rowsAffected == 0 { //更新された行がない場合は、該当IDが存在しないことを示すエラーを返す
 		return sql.ErrNoRows
 	}
 

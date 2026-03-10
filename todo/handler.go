@@ -125,6 +125,29 @@ func UpdateTodo(db *sql.DB) http.HandlerFunc {
 	}
 }
 
+// todo完了状態更新ハンドラ
+func ToggleTodoDone(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		path := strings.TrimPrefix(r.URL.Path, "/todos/")
+		idStr := strings.TrimSuffix(path, "/done")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			WriteError(w, http.StatusBadRequest, "Invalid ID parameter")
+			return
+		}
+		err = UpdateDone(db, id)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				WriteError(w, http.StatusNotFound, "Todo not found")
+				return
+			}
+			WriteError(w, http.StatusInternalServerError, "Internal Server Error")
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
 // 一件削除ハンドラ
 func DeleteTodo(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
